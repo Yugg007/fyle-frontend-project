@@ -25,6 +25,7 @@ const Main = () => {
 
   useEffect(() => {
     const path = window.location.pathname;
+    setPageSize(10)
     if (path.length > 0) {
       localStorage.setItem('input', path.slice(1));
       handleClickSearch()
