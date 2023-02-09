@@ -16,7 +16,6 @@ const Main = () => {
     const urlData = await axios.get(url);
     setdata(urlData?.data?.docs);
     setisLoading(false);
-    console.log(data);
   };
 
   const handleClick = () => {
@@ -37,7 +36,7 @@ const Main = () => {
     setinputTyped(e.target.value);
   };
 
-  const currentData = data ? (data.length > ((pageNumber - 1) * pageSize + pageNumber*pageSize)) ? data.slice((pageNumber - 1) * pageSize, pageNumber*pageSize) : []
+  const currentData = data ? (data?.length > ((pageNumber - 1) * pageSize + pageNumber*pageSize)) ? data?.slice((pageNumber - 1) * pageSize, pageNumber*pageSize) : []
   : [];
 
   const handlePrev = () => {
@@ -46,7 +45,7 @@ const Main = () => {
     }
   };
   const handleNext = () => {
-    if (pageNumber < Math.ceil(data.length / pageSize) && currentData) {
+    if (pageNumber < Math.ceil(data?.length / pageSize) && currentData) {
       setpageNumber(pageNumber + 1);
     }
   };
