@@ -28,7 +28,7 @@ const Main = () => {
     const path = window.location.pathname;
     setPageSize(10)
     if (path.length > 0) {
-      setPageSize(1);
+      setpageNumber(1);
       localStorage.setItem('input', path.slice(1));
       handleClickSearch()
     }
