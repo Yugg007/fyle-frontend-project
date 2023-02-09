@@ -7,29 +7,38 @@ const Main = () => {
   const [pageNumber, setpageNumber] = useState(1);
   const [data, setdata] = useState();
   const [pageSize, setPageSize] = useState(10);
+  const [isLoading, setisLoading] = useState(false);
 
   const handleClickSearch = async () => {
-    const url = `https://openlibrary.org/search.json?q=${inputTyped}&limit=50`;
+    setisLoading(true);
+    const input = localStorage.getItem('input');
+    const url = `https://openlibrary.org/search.json?q=${input}&limit=100`;
     const urlData = await axios.get(url);
-    setdata(urlData.data.docs);
-
+    setdata(urlData?.data?.docs);
+    setisLoading(false);
+    console.log(data);
   };
 
+  const handleClick = () => {
+    localStorage.setItem('input', inputTyped);
+    handleClickSearch();
+  }
+
   useEffect(() => {
-   const path = window.location.pathname;
-   if(path.length > 0){
-      setinputTyped(path.slice(1));
+    const path = window.location.pathname;
+    if (path.length > 0) {
+      localStorage.setItem('input', path.slice(1));
       handleClickSearch()
-   }
+    }
   }, [])
-  
-
-
 
   const handleChange = (e) => {
     e.preventDefault();
     setinputTyped(e.target.value);
   };
+
+  const currentData = data ? (data.length > ((pageNumber - 1) * pageSize + pageNumber*pageSize)) ? data.slice((pageNumber - 1) * pageSize, pageNumber*pageSize) : []
+  : [];
 
   const handlePrev = () => {
     if (pageNumber > 1) {
@@ -37,47 +46,50 @@ const Main = () => {
     }
   };
   const handleNext = () => {
-    if (pageNumber < Math.ceil(data.length / pageSize)) {
+    if (pageNumber < Math.ceil(data.length / pageSize) && currentData) {
       setpageNumber(pageNumber + 1);
     }
   };
-
-  const currentData = data
-    ? data.slice((pageNumber - 1) * pageSize, pageNumber * pageSize)
-    : [];
 
   return (
     <div>
       <div style={{ marginTop: 20, marginLeft: 20, marginBottom: 20 }}>
         <input type="search" placeholder={inputTyped} onChange={handleChange} />
-        <button onClick={handleClickSearch}>Search</button>
+        <button onClick={handleClick}>Search</button>
       </div>
       <hr />
 
-      <table style={{ border: "1px solid", width: "100%", textAlign:"left"}}>
-        <thead style={{ borderBottom: "1px solid" , backgroundColor:'green'}}>
+      <table style={{ border: "1px solid", width: "100%", textAlign: "left" }}>
+        <thead style={{ borderBottom: "1px solid", backgroundColor: 'green' }}>
           <tr>
-            <td style={{padding:"10px"}}>Title and Sub Title</td>
-            <td style={{padding:"10px"}}>Author</td>
-            <td style={{padding:"10px"}}>Latest Publish Year</td>
-            <td style={{padding:"10px"}}>First Publish Year</td>
+            <td style={{ padding: "10px" }}>Title and Sub Title</td>
+            <td style={{ padding: "10px" }}>Author</td>
+            <td style={{ padding: "10px" }}>Latest Publish Year</td>
+            <td style={{ padding: "10px" }}>First Publish Year</td>
           </tr>
         </thead>
-        <tbody>
-          {currentData.map((res, index) => (
-            <tr key={index}>
-              <td style={{padding:"10px"}}>{res.title ? res.title : ""}</td>
-              <td style={{padding:"10px"}}>{res.author_name[0] ? res.author_name[0] : ""}</td>
-              <td style={{padding:"10px"}}>{res.publish_date[0] ? res.publish_date[0] : ""}</td>
-              <td style={{padding:"10px"}}>{res.first_publish_year ? res.first_publish_year : ""}</td>
-            </tr>
-          ))}
-        </tbody>
+        {!isLoading &&
+          <tbody>
+            {currentData && currentData.length > 0 && currentData?.map((res, index) => (
+              (index < currentData?.length-1 && res && res.author_name && res.publish_date) && (
+                <tr key={index}>
+                  <td style={{ padding: "10px" }}>{res?.title ? res.title : ""}</td>
+                  <td style={{ padding: "10px" }}>{res?.author_name[0] ? res.author_name[0] : ""}</td>
+                  <td style={{ padding: "10px" }}>{res?.publish_date[0] ? res.publish_date[0] : ""}</td>
+                  <td style={{ padding: "10px" }}>{res?.first_publish_year ? res.first_publish_year : ""}</td>
+                </tr>)
+            ))}
+
+
+
+          </tbody>
+        }
       </table>
+      {isLoading && <h2>Loading...</h2>}
 
       <div className="App">
         <button onClick={handlePrev}> Prev </button>
-        <button onClick={handleNext}> Next </button>
+        {currentData.length === 0 && !isLoading ? <>Nothing to show next.</> : <button onClick={handleNext}> Next </button>}
       </div>
     </div>
   );
